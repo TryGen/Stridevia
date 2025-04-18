@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
                         sensorEvent.values[0],
                         sensorEvent.values[1],
                         sensorEvent.values[2]);
-                
+
+                displayCoords(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
             }
 
             @Override
@@ -60,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+    }
+
+    public void displayCoords(float x, float y, float z)
+    {
+        String coords = "x: " + x + ", y: " + y + ", z: " + z;
+        Toast.makeText(this, coords, Toast.LENGTH_SHORT).show();
     }
 
     @Override
