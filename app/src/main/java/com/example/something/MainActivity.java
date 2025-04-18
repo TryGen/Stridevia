@@ -7,86 +7,115 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * @author Mihnwq
+ *
+ * Class for the data intake of the phone's internal gyroscope.
+ */
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private SensorManager sensorManager;
-    private Sensor gyroscope;
-    private SensorEventListener gyroListener;
-    private Quaternion orientation;
+    private Sensor gyroSensor;
 
-    float x = 0 , y = 0, z = 0;
+    private float[] latestGyroValues = new float[3];
+
+    /**
+     * handler and gyroLogger both used to manipulate the main thread.
+     */
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable gyroLogger;
+
+    /**
+    *We specify the delay before the next data intake.
+     */
+    private int seconds = 1;
+
+    private int delay = seconds * 1000;
+
+    /**
+     * @param gyroOrientation
+     * Stores the gyro rotation in Quaternions.
+     */
+    Quaternion gyroOrientation = new Quaternion();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        orientation = new Quaternion();
+        gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         /**
-         * In case the device doesn't have a gyroscope.
+         * If the system has gyroscope , we initialize it.
          */
-        if(gyroscope == null)
-        {
-            Toast.makeText(this, "This device doesn't have a gyroscope", Toast.LENGTH_SHORT).show();
-            finish();
+        if (gyroSensor != null) {
+            sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        } else {
+            Toast.makeText(this, "Gyroscope not available", Toast.LENGTH_SHORT).show();
         }
 
-       // displayCoords(x,y,z);
-
-        gyroListener = new SensorEventListener() {
-
-            /**
-             * @param sensorEvent
-             * sensorEvent.value[i] represents rotation in the i axis.
-             */
-
+       /**
+       *In run() we manipulate the main thread to get the gyro data after n seconds.
+        */
+        gyroLogger = new Runnable() {
             @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                /* if(sensorEvent.values[1] > 0.5f)
-                     finish();*/
-                orientation.ToQuaternion(
-                        sensorEvent.values[0],
-                        sensorEvent.values[1],
-                        sensorEvent.values[2]);
+            public void run() {
 
-                x = sensorEvent.values[0];
-                y = sensorEvent.values[1];
-                z = sensorEvent.values[2];
-               // displayCoords(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
-                System.out.println(x);
+               gyroOrientation.ToQuaternion(
+                    latestGyroValues[0],
+                    latestGyroValues[1],
+                    latestGyroValues[2]
+               );
 
-            }
+                Log.d("GyroData",
+                        "x: " + gyroOrientation.x + " "
+                        + "y: " + gyroOrientation.y + " "
+                        + "z: " + gyroOrientation.z + " "
+                        + "w: " + gyroOrientation.w);
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
 
+                handler.postDelayed(this, delay);
             }
         };
-
+        handler.post(gyroLogger);
     }
 
-    public void displayCoords(float x, float y, float z)
-    {
-        String coords = "x: " + x + ", y: " + y + ", z: " + z;
-        Toast.makeText(this, coords, Toast.LENGTH_SHORT).show();
+    /**
+     * @param event
+     * event[i]  respresents the rotation in the i axis.
+     * each time the phone move we get the Euler angle of the gyro stored in latestGyroValues.
+     */
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            latestGyroValues[0] = event.values[0];
+            latestGyroValues[1] = event.values[1];
+            latestGyroValues[2] = event.values[2];
+        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        sensorManager.registerListener(gyroListener,gyroscope,SensorManager.SENSOR_DELAY_FASTEST);
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
+
     @Override
-    protected void onPause() {
-        super.onPause();
-        sensorManager.unregisterListener(gyroListener);
+    protected void onDestroy() {
+        super.onDestroy();
+        sensorManager.unregisterListener(this);
+        handler.removeCallbacks(gyroLogger);
     }
 }

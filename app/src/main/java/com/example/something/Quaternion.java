@@ -12,11 +12,11 @@ import static java.lang.Math.sin;
 
 public class Quaternion {
 
-    double x , y , z , w;
+    float x , y , z , w;
 
     public Quaternion()
     {
-        x = y = z = w = 0;
+        ResetAngles();
     }
 
     public void ResetAngles()
@@ -36,15 +36,17 @@ public class Quaternion {
 
         double cr = cos(roll * 0.5);
         double sr = sin(roll * 0.5);
+
         double cp = cos(pitch * 0.5);
         double sp = sin(pitch * 0.5);
+
         double cy = cos(yaw * 0.5);
         double sy = sin(yaw * 0.5);
 
-        w = cr * cp * cy + sr * sp * sy;
-        x = sr * cp * cy - cr * sp * sy;
-        y = cr * sp * cy + sr * cp * sy;
-        z = cr * cp * sy - sr * sp * cy;
+        w = (float)(cr * cp * cy + sr * sp * sy);
+        x = (float)(sr * cp * cy - cr * sp * sy);
+        y = (float)(cr * sp * cy + sr * cp * sy);
+        z = (float)(cr * cp * sy - sr * sp * cy);
     }
 
 
