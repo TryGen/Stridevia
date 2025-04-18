@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private SensorEventListener gyroListener;
     private Quaternion orientation;
 
+    float x = 0 , y = 0, z = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
 
+       // displayCoords(x,y,z);
+
         gyroListener = new SensorEventListener() {
 
             /**
@@ -52,7 +56,12 @@ public class MainActivity extends AppCompatActivity {
                         sensorEvent.values[1],
                         sensorEvent.values[2]);
 
-                displayCoords(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
+                x = sensorEvent.values[0];
+                y = sensorEvent.values[1];
+                z = sensorEvent.values[2];
+               // displayCoords(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
+                System.out.println(x);
+
             }
 
             @Override
