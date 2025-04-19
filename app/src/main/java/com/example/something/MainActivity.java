@@ -82,11 +82,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     latestGyroValues[2]
                );
 
-                Log.d("GyroData",
+             /*   Log.d("GyroData",
                         "x: " + gyroOrientation.x + " "
                         + "y: " + gyroOrientation.y + " "
                         + "z: " + gyroOrientation.z + " "
-                        + "w: " + gyroOrientation.w);
+                        + "w: " + gyroOrientation.w);*/
+
+                Log.d("Phone angle:", String.valueOf(Math.toDegrees(gyroOrientation.toAngle())));
 
 
                 handler.postDelayed(this, delay);

@@ -1,5 +1,6 @@
 package com.example.something;
 
+import static java.lang.Math.acos;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
@@ -14,10 +15,12 @@ public class Quaternion {
 
     float x , y , z , w;
 
-    public Quaternion()
-    {
-        ResetAngles();
-    }
+    public static final Quaternion zero = new Quaternion(0,0,0,0);
+
+    public Quaternion normalized = Quaternion.zero;
+
+    public Quaternion(){}
+
 
     public Quaternion(float x, float y, float z, float w)
     {
@@ -25,11 +28,21 @@ public class Quaternion {
         this.y = y;
         this.z = z;
         this.w = w;
+
+        getNormalized(this);
     }
 
-    public void ResetAngles()
+
+    public static void getNormalized(Quaternion q)
     {
-        x = y = z = w = 0;
+        float norm = q.getNormOf(q);
+
+        q.normalized = q;
+
+        q.normalized.x /= norm;
+        q.normalized.y /= norm;
+        q.normalized.z /= norm;
+        q.normalized.w /= norm;
     }
 
     /**
@@ -55,6 +68,8 @@ public class Quaternion {
         x = (float)(sr * cp * cy - cr * sp * sy);
         y = (float)(cr * sp * cy + sr * cp * sy);
         z = (float)(cr * cp * sy - sr * sp * cy);
+
+        getNormalized(this);
     }
 
     private Quaternion getConjugateOf(Quaternion q)
@@ -73,6 +88,11 @@ public class Quaternion {
         float qNormSqr = q.getSqrNormOf(q);
 
         return new Quaternion(qConj.x / qNormSqr,qConj.y / qNormSqr ,qConj.z / qNormSqr,qConj.w / qNormSqr);
+    }
+
+    public float toAngle()
+    {
+         return (float) (2 * acos(this.normalized.w));
     }
 
 }
