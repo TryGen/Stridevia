@@ -192,9 +192,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private void getNormalizedData(float rawX , float rawY , float rawZ)
     {
+        //Requires auto-rotate enabled on the phone to work.
         int rotation = ((WindowManager) getSystemService(WINDOW_SERVICE))
                 .getDefaultDisplay().getRotation();
 
+
+        /**
+         * I will change this ugly a$$ switch case later.
+         */
         switch (rotation) {
             case Surface.ROTATION_0:
                 latestGyroValues[0] = rawX;
@@ -219,11 +224,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 latestGyroValues[1] = -rawY;
                 latestGyroValues[2] = rawZ;
                 break;
-
-            default:
-                latestGyroValues[0] = rawX;
-                latestGyroValues[1] = rawY;
-                latestGyroValues[2] = rawZ;
         }
     }
 
