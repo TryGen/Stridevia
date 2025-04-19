@@ -19,6 +19,14 @@ public class Quaternion {
         ResetAngles();
     }
 
+    public Quaternion(float x, float y, float z, float w)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
+
     public void ResetAngles()
     {
         x = y = z = w = 0;
@@ -49,5 +57,22 @@ public class Quaternion {
         z = (float)(cr * cp * sy - sr * sp * cy);
     }
 
+    private Quaternion getConjugateOf(Quaternion q)
+    {
+        return new Quaternion(-q.x,-q.y,-q.z,q.w);
+    }
+
+    private float getNormOf(Quaternion q){return (float) Math.sqrt((q.x * q.x) + (q.y * q.y) + (q.z * q.z) + (q.w * q.w));}
+
+    private float getSqrNormOf(Quaternion q){float norm = getNormOf(q); return norm * norm;}
+
+    public static Quaternion getInvOf(Quaternion q)
+    {
+        Quaternion qConj = q.getConjugateOf(q);
+
+        float qNormSqr = q.getSqrNormOf(q);
+
+        return new Quaternion(qConj.x / qNormSqr,qConj.y / qNormSqr ,qConj.z / qNormSqr,qConj.w / qNormSqr);
+    }
 
 }
