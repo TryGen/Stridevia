@@ -32,6 +32,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float[] latestGyroValues = new float[3];
 
+    private float[] totalRotation = new float[3];
+    private long lastTimestamp = 0;
+
     /**
      * handler and gyroLogger both used to manipulate the main thread.
      */
@@ -60,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
+        Log.d("ceva","altceva");
+
         /**
          * If the system has gyroscope , we initialize it.
          */
@@ -77,18 +82,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void run() {
 
                gyroOrientation.ToQuaternion(
-                    latestGyroValues[0],
-                    latestGyroValues[1],
-                    latestGyroValues[2]
+                       totalRotation[0],
+                       totalRotation[1],
+                       totalRotation[2]
                );
 
-             /*   Log.d("GyroData",
-                        "x: " + gyroOrientation.x + " "
-                        + "y: " + gyroOrientation.y + " "
-                        + "z: " + gyroOrientation.z + " "
-                        + "w: " + gyroOrientation.w);*/
+                Log.d("GyroData",
+                        "x: " + Math.toDegrees(totalRotation[0]) + " "
+                        + "y: " + Math.toDegrees(totalRotation[1]) + " "
+                        + "z: " + Math.toDegrees(totalRotation[2]));
 
-                Log.d("Phone angle:", String.valueOf(Math.toDegrees(gyroOrientation.toAngle())));
+               // Log.d("Phone angle:", String.valueOf(Math.toDegrees(gyroOrientation.toAngle())));
 
 
                 handler.postDelayed(this, delay);
@@ -96,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         };
         handler.post(gyroLogger);
     }
+
 
 
     /**
@@ -106,11 +111,55 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-          /*  latestGyroValues[0] = event.values[0];
-            latestGyroValues[1] = event.values[1];
-            latestGyroValues[2] = event.values[2];*/
+
             getNormalizedData(event.values[0],event.values[1],event.values[2]);
+
+            /**
+             * Deoarece giroscopul returneaza decat pe axa i, viteza rad/s
+             * Va trebuii sa extragem unghiul efectiv prin a elimina variabila de ,,timp"
+             */
+
+            /* if (lastTimestamp != 0) {
+                float dt = (event.timestamp - lastTimestamp) * 1.0f / 1_000_000_000.0f; // secunde
+                for (int i = 0; i < 3; i++) {
+                   // totalRotation[i] += event.values[i] * dt;
+                    totalRotation[i] += latestGyroValues[i] * dt;
+                }
+            }
+            lastTimestamp = event.timestamp;
+           */
+
+            getTotalRotation(event);
+
+
+          /*  float angleZ = (float) Math.toDegrees(totalRotation[2]);
+            Log.d("AngleZ", "Z: " + angleZ);*/
         }
+    }
+
+    private void getTotalRotation(SensorEvent event)
+    {
+        if (lastTimestamp != 0) {
+            float dt = (event.timestamp - lastTimestamp) * 1.0f / 1_000_000_000.0f;
+            for (int i = 0; i < 3; i++) {
+                // totalRotation[i] += event.values[i] * dt;
+                totalRotation[i] += latestGyroValues[i] * dt;
+                totalRotation[i] = normalizeAngle(totalRotation[i]);
+            }
+        }
+        lastTimestamp = event.timestamp;
+    }
+
+    private float normalizeAngle(float angle)
+    {
+        float r = (float) (2 * Math.PI);
+
+        if(angle >= r)
+            return 0;
+        else if (angle < 0)
+            return r + angle;
+
+        return angle;
     }
 
     /**
@@ -204,29 +253,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
          */
         switch (rotation) {
             case Surface.ROTATION_0:
-                latestGyroValues[0] = rawX;
-                latestGyroValues[1] = rawY;
-                latestGyroValues[2] = rawZ;
+                setRotations(rawX,rawY,rawZ);
                 break;
 
             case Surface.ROTATION_90:
-                latestGyroValues[0] = -rawY;
-                latestGyroValues[1] = rawX;
-                latestGyroValues[2] = rawZ;
+                setRotations(-rawY,rawX,rawZ);
                 break;
 
             case Surface.ROTATION_270:
-                latestGyroValues[0] = rawY;
-                latestGyroValues[1] = -rawX;
-                latestGyroValues[2] = rawZ;
+                setRotations(rawY,-rawX,rawZ);
                 break;
 
             case Surface.ROTATION_180:
-                latestGyroValues[0] = -rawX;
-                latestGyroValues[1] = -rawY;
-                latestGyroValues[2] = rawZ;
+                setRotations(-rawX,-rawY,rawZ);
                 break;
         }
+    }
+
+    private void setRotations(float x, float y, float z)
+    {
+        latestGyroValues[0] = x;
+        latestGyroValues[1] = y;
+        latestGyroValues[2] = z;
     }
 
     @Override
