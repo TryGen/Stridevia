@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-        Log.d("ceva","altceva");
 
         /**
          * If the system has gyroscope , we initialize it.
@@ -132,8 +131,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             getTotalRotation(event);
 
 
-          /*  float angleZ = (float) Math.toDegrees(totalRotation[2]);
-            Log.d("AngleZ", "Z: " + angleZ);*/
+
         }
     }
 
