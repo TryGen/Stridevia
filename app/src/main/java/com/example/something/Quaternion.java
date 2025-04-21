@@ -32,6 +32,13 @@ public class Quaternion {
         getNormalized(this);
     }
 
+    public Quaternion(double roll, double pitch, double yaw)
+    {
+        ToQuaternion(x,y,z);
+
+        getNormalized(this);
+    }
+
 
     public static void getNormalized(Quaternion q)
     {
