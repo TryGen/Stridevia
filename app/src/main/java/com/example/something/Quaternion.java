@@ -95,4 +95,14 @@ public class Quaternion {
          return (float) (2 * acos(this.normalized.w));
     }
 
+    public static Quaternion multiply(Quaternion q1, Quaternion q2)
+    {
+        float nw = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
+        float nx = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
+        float ny = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
+        float nz = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
+
+        return new Quaternion(nx,ny,nz,nw);
+    }
+
 }
